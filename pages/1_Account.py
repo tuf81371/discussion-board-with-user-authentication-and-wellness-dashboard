@@ -10,12 +10,31 @@ st.set_page_config(
     page_icon="🌿"
 )
 
-DB_PATH = r"C:\Users\tuf81\discussion_board.db"
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "discussion_board.db")
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
+def init_db():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+init_db()
 
 def hash_password(password):
     salt = os.urandom(16)
@@ -135,7 +154,7 @@ if st.session_state.user_id is None:
                     st.warning("Please complete all fields.")
 
                 elif len(password) < 8:
-                    st.warning("Password must be at least 12 characters.")
+                    st.warning("Password must be at least 8 characters.")
 
                 elif password != confirm_password:
                     st.warning("Passwords do not match.")
