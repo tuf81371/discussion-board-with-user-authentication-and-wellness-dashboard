@@ -1,4 +1,4 @@
-
+import os
 import streamlit as st
 import sqlite3
 
@@ -8,11 +8,39 @@ st.set_page_config(
     layout="centered"
 )
 
-DB_PATH = r"C:\Users\tuf81\discussion_board.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "discussion_board.db")
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
+def init_db():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS discussions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        post TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        discussion_id INTEGER NOT NULL,
+        comment TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+init_db()
 
 def get_discussions():
     conn = get_connection()
